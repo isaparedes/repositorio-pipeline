@@ -9,35 +9,35 @@ kind: Pod
 spec:
   containers:
   - name: jnlp
-    image: jenkins/inbound-agent:4.13-4
+    image: jenkins/inbound-agent:latest
     args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
   - name: python
     image: python:3.11
-    command: ['cat']
-    tty: true
-  - name: docker
-    image: docker:24.0.6
     command: ['cat']
     tty: true
 """
         }
     }
 
+    environment {
+        DOCKER_ENV = '' // se llenará en el stage
+    }
+
     stages {
 
-        stage('Check Python') {
+        stage('Test Pod') {
             steps {
                 container('python') {
                     sh 'python --version'
-                    sh 'echo Hola desde Minikube'
+                    sh 'echo Pod funcionando en Minikube'
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                container('docker') {
-                    // Usa Docker dentro de Minikube
+                container('python') {
+                    // Usamos el Docker de Minikube
                     sh 'eval $(minikube docker-env)'
                     sh 'docker build -t notes-api:latest .'
                 }
@@ -47,18 +47,18 @@ spec:
         stage('Deploy to Minikube') {
             steps {
                 container('python') {
-                    // Aplica tus manifests
                     sh 'kubectl apply -f deployment.yaml'
                     sh 'kubectl apply -f service.yaml'
                 }
             }
         }
+
     }
 
     post {
         always {
             container('python') {
-                sh 'echo Pipeline finalizado'
+                sh 'echo Pipeline finalizada'
             }
         }
     }
