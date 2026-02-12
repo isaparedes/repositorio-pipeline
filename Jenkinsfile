@@ -1,21 +1,22 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24-dind'
-            args '--privileged'
-        }
-    }
-
+    agent any
     stages {
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                checkout scm
+                sh 'echo "Building the application..."'
+                // Add your build commands here (e.g., mvn clean install)
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Test') {
             steps {
-                sh 'docker build -t mi-app:latest .'
+                sh 'echo "Running tests..."'
+                // Add your test commands here
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'echo "Deploying the application..."'
+                // Add your deploy commands here
             }
         }
     }
