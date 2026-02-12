@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "notes-api"                 // nombre de la imagen local
+        IMAGE_NAME = "notes-api"
         IMAGE_TAG = "latest"
-        KUBE_CONFIG = "/var/jenkins_home/.kube/config" // Jenkins necesita acceso a kubectl
+        KUBE_CONFIG = "C:\\Users\\isapa\\.kube\\config" // ruta de tu kubeconfig en Windows
     }
 
     stages {
@@ -16,29 +16,34 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Esto asegura que la imagen quede en el Docker de Minikube
-                sh """
-                eval \$(minikube -p minikube docker-env)
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                // Usamos PowerShell para Windows
+                powershell """
+                # Configuramos el entorno de Docker de Minikube
+                & minikube -p minikube docker-env --shell powershell | Invoke-Expression
+
+                # Construimos la imagen
+                docker build -t $env:IMAGE_NAME:$env:IMAGE_TAG .
                 """
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                // Actualiza deployment.yaml con la imagen local
-                sh "sed -i 's|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|' deployment.yaml"
+                powershell """
+                # Reemplazamos la imagen en deployment.yaml
+                (Get-Content deployment.yaml) -replace 'image: .*', "image: $env:IMAGE_NAME:$env:IMAGE_TAG" | Set-Content deployment.yaml
 
-                // Aplica los YAML en el cluster
-                sh "kubectl --kubeconfig=$KUBE_CONFIG apply -f deployment.yaml"
-                sh "kubectl --kubeconfig=$KUBE_CONFIG apply -f service.yaml"
+                # Aplicamos los YAML en el cluster
+                kubectl --kubeconfig=$env:KUBE_CONFIG apply -f deployment.yaml
+                kubectl --kubeconfig=$env:KUBE_CONFIG apply -f service.yaml
+                """
             }
         }
     }
 
     post {
         success {
-            echo "✅ Deploy a Kubernetes completado correctamente usando imagen local en Minikube."
+            echo "✅ Deploy a Kubernetes completado correctamente usando imagen local en Minikube (Windows)."
         }
         failure {
             echo "❌ Pipeline falló."
