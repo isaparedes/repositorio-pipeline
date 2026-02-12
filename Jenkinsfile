@@ -1,29 +1,29 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            label 'python-pod'
+            defaultContainer 'python'
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: python
+    image: python:3.11
+    command:
+    - cat
+    tty: true
+"""
+        }
+    }
 
     stages {
-        stage('Clone') {
+        stage('Test Pod') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Build image') {
-            steps {
-                sh 'docker build -t notes-api .'
-            }
-        }
-
-        stage('Run container') {
-            steps {
-                sh '''
-                docker rm -f notes-api || true
-                docker run -d \
-                  -p 5001:5001 \
-                  -v notes_data:/data \
-                  --name notes-api \
-                  notes-api
-                '''
+                container('python') {
+                    sh 'python --version'
+                    sh 'echo Hola desde Minikube'
+                }
             }
         }
     }
