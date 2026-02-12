@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:24-dind'
+            args '--privileged'
+        }
+    }
 
     stages {
         stage('Checkout') {
