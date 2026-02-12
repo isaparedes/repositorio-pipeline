@@ -1,51 +1,30 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "notes-api"
-        IMAGE_TAG = "latest"
-        KUBE_CONFIG = "/var/jenkins_home/.kube/config" // ruta al kubeconfig en Linux
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/isaparedes/repositorio-pipeline.git'
+                checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build image') {
             steps {
-                sh """
-                # Configuramos Docker para usar el Docker de Minikube
-                eval \$(minikube -p minikube docker-env)
-
-                # Construimos la imagen
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
-                """
+                sh 'docker build -t notes-api .'
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Run container') {
             steps {
-                sh """
-                # Reemplazamos la imagen en deployment.yaml
-                sed -i 's|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|' deployment.yaml
-
-                # Aplicamos los YAML en el cluster
-                kubectl --kubeconfig=$KUBE_CONFIG apply -f deployment.yaml
-                kubectl --kubeconfig=$KUBE_CONFIG apply -f service.yaml
-                """
+                sh '''
+                docker rm -f notes-api || true
+                docker run -d \
+                  -p 5001:5001 \
+                  -v notes_data:/data \
+                  --name notes-api \
+                  notes-api
+                '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Deploy a Kubernetes completado correctamente usando imagen local en Minikube."
-        }
-        failure {
-            echo "❌ Pipeline falló."
         }
     }
 }
