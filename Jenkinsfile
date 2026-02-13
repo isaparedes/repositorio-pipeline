@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'notes-pod'
+            label 'minikube'
             defaultContainer 'python'
             yaml """
 apiVersion: v1
