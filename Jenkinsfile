@@ -10,6 +10,16 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Debug Kaniko') {
+            steps {
+                container('kaniko') {
+                    sh 'pwd'
+                    sh 'ls -l'
+                    sh 'ls -l /home/jenkins/agent/workspace/${JOB_NAME}/app'
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 container('kaniko') {
