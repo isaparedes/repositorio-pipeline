@@ -2,6 +2,21 @@ pipeline {
     agent {
         kubernetes {
             inheritFrom 'deploy-agent'
+            defaultContainer 'jnlp'
+            yaml """
+            spec:
+              containers:
+              - name: kaniko
+                image: gcr.io/kaniko-project/executor:debug
+                command: ['sleep']
+                args: ['infinity']
+                tty: true
+              - name: kubectl
+                image: bitnami/kubectl:latest
+                command: ['sleep']
+                args: ['infinity']
+                tty: true
+            """
         }
     }
     stages {
@@ -19,7 +34,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 container('kaniko') {
