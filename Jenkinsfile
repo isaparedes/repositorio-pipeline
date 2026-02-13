@@ -11,13 +11,13 @@ spec:
     command:
     - /kaniko/executor
     args:
-    - --context=/home/jenkins/agent/workspace/${JOB_NAME}/app
-    - --dockerfile=/home/jenkins/agent/workspace/${JOB_NAME}/app/Dockerfile
+    - --context=/home/jenkins/agent/workspace/pipeline20001/app
+    - --dockerfile=/home/jenkins/agent/workspace/pipeline20001/app/Dockerfile
     - --destination=mi-app:latest
     - --no-push
     tty: true
   - name: kubectl
-    image: bitnami/kubectl:latest
+    image: bitnami/kubectl:debug
     command: ['sleep']
     args: ['infinity']
     tty: true
