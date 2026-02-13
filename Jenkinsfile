@@ -17,7 +17,7 @@ spec:
     - --no-push
     tty: true
   - name: kubectl
-    image: bitnami/kubectl:debug
+    image: bitnami/kubectl:latest
     command: ['sleep']
     args: ['infinity']
     tty: true
