@@ -1,22 +1,27 @@
 pipeline {
     agent {
         kubernetes {
-            inheritFrom 'deploy-agent'
-            defaultContainer 'jnlp'
             yaml """
-            spec:
-              containers:
-              - name: kaniko
-                image: gcr.io/kaniko-project/executor:debug
-                command: ['sleep']
-                args: ['infinity']
-                tty: true
-              - name: kubectl
-                image: bitnami/kubectl:latest
-                command: ['sleep']
-                args: ['infinity']
-                tty: true
-            """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command:
+    - /kaniko/executor
+    args:
+    - --context=/home/jenkins/agent/workspace/${JOB_NAME}/app
+    - --dockerfile=/home/jenkins/agent/workspace/${JOB_NAME}/app/Dockerfile
+    - --destination=mi-app:latest
+    - --no-push
+    tty: true
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command: ['sleep']
+    args: ['infinity']
+    tty: true
+"""
         }
     }
     stages {
@@ -25,19 +30,10 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Debug Kaniko') {
-            steps {
-                container('kaniko') {
-                    sh 'pwd'
-                    sh 'ls -l'
-                    sh 'ls -l /home/jenkins/agent/workspace/${JOB_NAME}/app'
-                }
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 container('kaniko') {
-                    sh '/kaniko/executor --context=/home/jenkins/agent/workspace/${JOB_NAME}/app --dockerfile=/home/jenkins/agent/workspace/${JOB_NAME}/app/Dockerfile --destination=mi-app:latest --no-push'
+                    echo "Kaniko ejecutando build directamente"
                 }
             }
         }
