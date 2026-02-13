@@ -1,19 +1,13 @@
 pipeline {
     agent {
         kubernetes {
-            label 'test-agent'
-            defaultContainer 'jnlp'
+            inheritFrom 'default-agent'
         }
     }
     stages {
-        stage('Checkout') {
+        stage('Hello') {
             steps {
-                checkout scm
-            }
-        }
-        stage('Build') {
-            steps {
-                sh 'echo "Compilando desde el repo en un pod efímero!"'
+                sh 'echo "Hola desde un pod efímero en Kubernetes!"'
             }
         }
     }
