@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'deploy-agent'
+            inheritFrom 'deploy-agent'   // usa tu Pod Template
         }
     }
     stages {
@@ -10,9 +10,10 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo "Compilando la app..."'
+                // Construye la imagen usando el Dockerfile en la carpeta app
+                sh 'docker build -t mi-app:latest ./app'
             }
         }
         stage('Deploy to Kubernetes') {
