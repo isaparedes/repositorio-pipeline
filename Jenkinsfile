@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            inheritFrom 'deploy-agent'   // usa tu Pod Template
+            inheritFrom 'deploy-agent'
         }
     }
     stages {
@@ -12,8 +12,9 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                // Construye la imagen usando el Dockerfile en la carpeta app
-                sh 'docker build -t mi-app:latest ./app'
+                container('kaniko') {
+                    sh '/kaniko/executor --context ./app --dockerfile ./app/Dockerfile --destination=mi-app:latest'
+                }
             }
         }
         stage('Deploy to Kubernetes') {
