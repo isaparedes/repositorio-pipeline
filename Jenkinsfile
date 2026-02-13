@@ -5,9 +5,21 @@ pipeline {
         }
     }
     stages {
-        stage('Hello') {
+        stage('Checkout') {
             steps {
-                sh 'echo "Hola desde un pod efímero en Kubernetes!"'
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'echo "Compilando la app..."'
+                // acá iría tu comando real de build/test
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s/deployment.yaml'
+                sh 'kubectl apply -f k8s/service.yaml'
             }
         }
     }
